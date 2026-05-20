@@ -37,6 +37,30 @@ class App:
                     m += 1
         return m
 
+    def verify_no_cross(self, selected_ids=None):
+        zones_to_check = self.zones
+        if selected_ids is not None:
+            zones_to_check = [z for z in self.zones if z.id in selected_ids]
+        n = len(zones_to_check)
+        if n == 0:
+            print("Немає зон для перевірки.")
+            return
+        print(f"\n--- Детальна перевірка перетинів ({n} зон) ---")
+        conflict_found = False
+        for i in range(n):
+            for j in range(i + 1, n):
+                z1 = zones_to_check[i]
+                z2 = zones_to_check[j]
+                if z1.cross(z2):
+                    print(f"[ПОМИЛКА] Зона {z1.id} (x:{z1.x}, y:{z1.y}, a:{z1.a}, b:{z1.b}) "
+                          f"ПЕРЕТИНАЄТЬСЯ із Зоною {z2.id} (x:{z2.x}, y:{z2.y}, a:{z2.a}, b:{z2.b})!")
+                    conflict_found = True
+
+        if not conflict_found:
+            print("[УСПІХ] Жодного перетину не виявлено! Всі зони розміщені коректно.")
+            print(f"Загальна кількість перевірених унікальних пар: {n * (n - 1) // 2}")
+        print("---------------------------------------------")
+
     def plot_zones(self, title="Розміщення зон на площині"):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.set_xlim(0, self.A)
@@ -294,6 +318,7 @@ def main():
         print("4 - Вивести дані задачі")
         print("5 - Вивести розв'язки задачі")
         print("6 - Візуалізувати зони на площині")
+        print("7 - Детальна перевірка перетинів (Логи)")
         print("0 - Завершити роботу")
 
         ch = input("Вибір: ")
@@ -371,7 +396,30 @@ def main():
                 print("Спочатку згенеруйте або завантажте зони!")
                 continue
             app.plot_zones()
+        elif ch == '7':
+            if not app.zones:
+                print("Спочатку згенеруйте або завантажте зони!")
+                continue
 
+            print("\n1. Перевірити ВСІ згенеровані зони (початкові дані)")
+            print("2. Перевірити розв'язок Жадібного алгоритму")
+            print("3. Перевірити розв'язок Генетичного алгоритму")
+            chk_ch = input("Вибір: ")
+
+            if chk_ch == '1':
+                app.verify_no_cross()
+            elif chk_ch == '2':
+                if 'gr' in last_res:
+                    print("Перевірка зон, що ввійшли у розв'язок Жадібного алгоритму:")
+                    app.verify_no_cross(last_res['gr'][0])
+                else:
+                    print("Спочатку запустіть алгоритми (Пункт 2)!")
+            elif chk_ch == '3':
+                if 'gn' in last_res:
+                    print("Перевірка зон, що ввійшли у розв'язок Генетичного алгоритму:")
+                    app.verify_no_cross(last_res['gn'][0])
+                else:
+                    print("Спочатку запустіть алгоритми (Пункт 2)!")
         elif ch == '0':
             break
 
