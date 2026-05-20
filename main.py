@@ -182,15 +182,21 @@ def genetic(app, p_sz=50, m_g=100, p_m=0.1, show_steps=False):
 def exp_max_gen(app):
     print("\nЗапуск експерименту: Вплив maxGen...")
     mg_vals = [10, 20, 30, 40, 50]
+    print("Генерація тестових наборів...")
+    test_apps = []
+    for _ in range(20):
+        p = App(app.A, app.B)
+        p.gen_rand(20, t_m=10)
+        test_apps.append(p)
+
     res = []
     for mg in mg_vals:
         f_sum = 0
-        for _ in range(100):
-            p = App(app.A, app.B)
-            p.gen_rand(20, t_m=10)
+        for p in test_apps:
             _, f = genetic(p, p_sz=20, m_g=mg)
             f_sum += f
-        res.append(f_sum / 20)
+        res.append(f_sum / len(test_apps))
+
     plt.plot(mg_vals, res, marker='o')
     plt.title("Вплив maxGen")
     plt.xlabel("maxGen")
@@ -202,15 +208,23 @@ def exp_max_gen(app):
 def exp_pop_size(app):
     print("\nЗапуск експерименту: Вплив popSize...")
     ps_vals = [10, 20, 30, 40, 50]
+
+
+    print("Генерація тестових наборів...")
+    test_apps = []
+    for _ in range(20):
+        p = App(app.A, app.B)
+        p.gen_rand(20, t_m=10)
+        test_apps.append(p)
+
     res = []
     for ps in ps_vals:
         f_sum = 0
-        for _ in range(40):
-            p = App(app.A, app.B)
-            p.gen_rand(20, t_m=10)
+        for p in test_apps:
             _, f = genetic(p, p_sz=ps, m_g=30)
             f_sum += f
-        res.append(f_sum / 20)
+        res.append(f_sum / len(test_apps))
+
     plt.plot(ps_vals, res, marker='o', color='orange')
     plt.title("Вплив popSize")
     plt.xlabel("popSize")
