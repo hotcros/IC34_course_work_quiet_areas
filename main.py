@@ -61,11 +61,18 @@ class App:
             print(f"Загальна кількість перевірених унікальних пар: {n * (n - 1) // 2}")
         print("---------------------------------------------")
 
-    def plot_zones(self, title="Розміщення зон на площині"):
+    # ОНОВЛЕНО: додано параметр selected_ids для фільтрації зон при малюванні
+    def plot_zones(self, title="Розміщення зон на площині", selected_ids=None):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.set_xlim(0, self.A)
         ax.set_ylim(0, self.B)
-        for z in self.zones:
+
+        # Відбираємо зони для малювання
+        zones_to_plot = self.zones
+        if selected_ids is not None:
+            zones_to_plot = [z for z in self.zones if z.id in selected_ids]
+
+        for z in zones_to_plot:
             rect = patches.Rectangle((z.x, z.y), z.a, z.b, linewidth=1.5, edgecolor='blue', facecolor='lightblue',
                                      alpha=0.5)
             ax.add_patch(rect)
@@ -233,7 +240,6 @@ def exp_pop_size(app):
     print("\nЗапуск експерименту: Вплив popSize...")
     ps_vals = [10, 20, 30, 40, 50]
 
-
     print("Генерація тестових наборів...")
     test_apps = []
     for _ in range(20):
@@ -348,7 +354,6 @@ def main():
                 n = int(input("Кількість (n): "))
                 m = int(input("Перетинів (m): "))
 
-                # Нові поля для ручного введення меж (значення у [] підставляться автоматично, якщо натиснути Enter)
                 a_n = int(input("Нижня межа довжини зон (a_н) [5]: ") or 5)
                 a_v = int(input("Верхня межа довжини зон (a_в) [20]: ") or 20)
                 b_n = int(input("Нижня межа висоти зон (b_н) [5]: ") or 5)
@@ -356,7 +361,6 @@ def main():
                 w_n = int(input("Нижня межа ваги зон (w_н) [10]: ") or 10)
                 w_v = int(input("Верхня межа ваги зон (w_в) [50]: ") or 50)
 
-                # Передаємо зафіксовані змінні до генератора
                 app.gen_rand(n, t_m=m, a_n=a_n, a_v=a_v, b_n=b_n, b_v=b_v, w_n=w_n, w_v=w_v)
 
         elif ch == '2':
@@ -391,11 +395,31 @@ def main():
             if last_res:
                 print(f"Жад: {last_res['gr'][0]} | {last_res['gr'][1]}")
                 print(f"Ген: {last_res['gn'][0]} | {last_res['gn'][1]}")
+
+        # ОНОВЛЕНО: Тепер пункт 6 має підменю, як і пункт 7
         elif ch == '6':
             if not app.zones:
                 print("Спочатку згенеруйте або завантажте зони!")
                 continue
-            app.plot_zones()
+
+            print("\n1. Візуалізувати ВСІ згенеровані зони (початкові дані)")
+            print("2. Візуалізувати розв'язок Жадібного алгоритму")
+            print("3. Візуалізувати розв'язок Генетичного алгоритму")
+            vis_ch = input("Вибір: ")
+
+            if vis_ch == '1':
+                app.plot_zones(title="Всі згенеровані зони")
+            elif vis_ch == '2':
+                if 'gr' in last_res:
+                    app.plot_zones(title="Розв'язок Жадібного алгоритму", selected_ids=last_res['gr'][0])
+                else:
+                    print("Спочатку запустіть алгоритми (Пункт 2)!")
+            elif vis_ch == '3':
+                if 'gn' in last_res:
+                    app.plot_zones(title="Розв'язок Генетичного алгоритму", selected_ids=last_res['gn'][0])
+                else:
+                    print("Спочатку запустіть алгоритми (Пункт 2)!")
+
         elif ch == '7':
             if not app.zones:
                 print("Спочатку згенеруйте або завантажте зони!")
